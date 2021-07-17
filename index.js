@@ -315,4 +315,111 @@ Aranda.put("/publication/book/update/:isbn",(req,res) =>{
   return res.json({ publications: database.publications, books: database.books, message: "successfully updated publication"});
   });
   
+  /*
+ route           /book/delete
+ description    delete a book
+ access        PUBLIC
+ parameters    isbn
+ method        DELETE
+*/ 
+
+Aranda.delete("/book/delete/:isbn",(req,res) =>{
+const updatedBookDatabase = database.books.filter((book) =>
+book.ISBN !== req.params.isbn
+);
+
+database.books= updatedBookDatabase;
+return res.json({books: database.books });    //coz we're changing const to let in database as we're
+  });                                         //replacing whole database with a new database
+
+ /*
+ route           /book/author/delete
+ description    delete an author from a book
+ access        PUBLIC
+ parameters    isbn , author id
+ method        DELETE
+*/ 
+
+Aranda.delete("/book/author/delete/:isbn/:authorID",(req,res) =>{
+  database.books.forEach((book)=>{
+   if(book.ISBN === req.params.isbn){
+     const newAuthorList = book.authors.filter(
+       (author)=> author !== parseInt(req.params.authorID)
+     );
+     book.authors = newAuthorList;
+     return;
+   }
+  });
+  database.authors.forEach((author)=>{
+    if(author.id === parseInt(req.params.authorID)){
+      const newBooksList = author.books.filter(
+        (book)=> book !== req.params.isbn
+      );
+      author.books = newBooksList;
+      return;
+    }
+   });
+  return res.json({books: database.books, authors: database.authors,message:"author was deleted" });    
+    });                    
+  
+   /*
+ route           /author/delete
+ description    delete an author
+ access        PUBLIC
+ parameters    id
+ method        DELETE
+*/ 
+
+Aranda.delete("/author/delete/:id",(req,res) =>{
+  const updatedAuthorDatabase = database.authors.filter((author) =>
+  author.id !== parseInt(req.params.id)
+  );
+  database.authors= updatedAuthorDatabase;
+  return res.json({authors: database.authors });    
+    });             
+
+ /*
+ route           /publication/book/delete
+ description    delete a book from publication
+ access        PUBLIC
+ parameters    isbn , publication id
+ method        DELETE
+*/ 
+
+Aranda.delete("/publication/book/delete/:isbn/:pubID",(req,res) =>{
+  database.publications.forEach((publication)=>{
+    if(publication.id === parseInt(req.params.pubID)){    //updating publication database
+      const newBooksList = publication.books.filter(
+        (book)=> book !== req.params.isbn
+      );
+      publication.books = newBooksList;
+      return;
+    }
+   });
+  database.books.forEach((book)=>{
+   if(book.ISBN === req.params.isbn){                    //updating book database
+     book.publication = 0; //No publication available
+     return;
+   }
+  });
+
+  return res.json({books: database.books, publications: database.publications});    
+    });                    
+      
+    /*
+ route           /publication/delete
+ description    delete a publication
+ access        PUBLIC
+ parameters    id
+ method        DELETE
+*/ 
+
+Aranda.delete("/publication/delete/:id",(req,res) =>{
+  const updatedPublicationDatabase = database.publications.filter((publication) =>
+  publication.id !== parseInt(req.params.id)
+  );
+  database.publications= updatedPublicationDatabase;
+  return res.json({publications: database.publications });    
+    });    
+
 Aranda.listen(3000, () => console.log("Server Running!!"));

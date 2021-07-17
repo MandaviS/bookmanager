@@ -1,4 +1,4 @@
-const books = [
+let books = [
     {
         ISBN: "12345ONE",
         title: "Getting Started with MERN",
@@ -21,7 +21,7 @@ const books = [
     },
 ];
 
-const authors = [
+let authors = [
     {
      id: 1,
      name: "pavan",

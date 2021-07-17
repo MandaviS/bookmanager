@@ -1,0 +1,68 @@
+Requirements
+
+We are a company that handles book publications.....
+
+Book
+ISBN, Title, Author [], Language, Pub Date, Num Page, Category[]
+
+Authors
+Name, ID, Books[]
+
+Publications
+Name, ID, Books[]
+
+Requirements =>
+
+Books
+We need an API
+
+GET
+.To get all books     
+.to get specific books  
+.to get a list of books based on category  
+.to get a list of books based on author  
+
+POST 
+.new book
+
+PUT  
+.update book details 
+.add/update new author
+
+DELETE 
+.delete a book  
+.delete an author from a book
+
+-------------------
+Author
+We need an API
+.to get all authors  
+.to get specific authors  
+.to get a list of authors based on a book  
+
+POST 
+.new author
+
+PUT  
+.update author details 
+
+DELETE 
+.delete an author
+
+--------------------
+Publication
+We need an API
+.to get all Publications    
+.to get specific publications 
+.to get a list of publications based on a book
+
+POST 
+.new Publication
+
+PUT  
+.update publication details 
+.add/update new book to a publication
+
+DELETE 
+.delete a book from publication 
+.delete a publication

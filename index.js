@@ -1,10 +1,24 @@
+require("dotenv").config();  //for security purpose
 const express = require("express");
+const mongoose = require("mongoose");
 
 const database = require("./database/index");
 
 const Aranda = express();
 
 Aranda.use(express.json());
+
+//establishing database connection
+mongoose.connect(
+  process.env.MONGO_URL,{
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true
+  }
+).then(() => console.log("connection established!!"));
+
+
 
 /*
  route           /

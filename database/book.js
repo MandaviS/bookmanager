@@ -11,6 +11,6 @@ const BookSchema = mongoose.Schema({        //creating a book schema
     publication: Number,
 });
 
-const BookModel = mongoose.model(BookSchema);   //creating a model
+const BookModel = mongoose.model("books",BookSchema);   //creating a model
 
 module.exports = BookModel;

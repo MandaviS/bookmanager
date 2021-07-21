@@ -1,8 +1,12 @@
 require("dotenv").config();  //for security purpose
 const express = require("express");
 const mongoose = require("mongoose");
-
+//Database
 const database = require("./database/index");
+//Models
+const bookModels = require("./database/book");
+const authorModels = require("./database/author");
+const publicationModels = require("./database/publication");  
 
 const Aranda = express();
 

@@ -4,9 +4,9 @@ const mongoose = require("mongoose");
 //Database
 const database = require("./database/index");
 //Models
-const bookModels = require("./database/book");
-const authorModels = require("./database/author");
-const publicationModels = require("./database/publication");  
+const BookModel = require("./database/book");
+const AuthorModel = require("./database/author");
+const PublicationModel = require("./database/publication");  
 
 const Aranda = express();
 
@@ -32,8 +32,9 @@ mongoose.connect(
  method        GET
 */
 
-Aranda.get("/",(req,res) => {
-  return res.json({ books: database.books});
+Aranda.get("/",async (req,res) => {
+  const getAllBooks = await BookModel.find();
+  return res.json({getAllBooks});
 });
 
 /*
@@ -44,11 +45,12 @@ Aranda.get("/",(req,res) => {
  method        GET
 */
 
-Aranda.get("/is/:isbn",(req,res) => {
-const getSpecificBook = database.books.filter(
-    (book) => book.ISBN === req.params.isbn
-    );
-if(getSpecificBook.length === 0){
+Aranda.get("/is/:isbn",async(req,res) => {
+const getSpecificBook = await BookModel.findOne({ISBN: req.params.isbn}); //only one book can have an isbn
+// const getSpecificBook = database.books.filter(
+//   (book) => book.ISBN === req.params.isbn
+//     );
+if(!getSpecificBook){
     return res.json({
       error: `No book found for the ISBN of ${req.params.isbn}`,
     });
@@ -65,11 +67,12 @@ if(getSpecificBook.length === 0){
  method        GET
 */
 
-Aranda.get("/c/:category",(req,res) => {
-    const getSpecificBooks = database.books.filter(
-        (book) => book.category.includes(req.params.category)     // boolean result
-        );
-    if(getSpecificBooks.length === 0){
+Aranda.get("/c/:category",async(req,res) => {
+  const getSpecificBooks = await BookModel.findOne({category: req.params.category,});
+    // const getSpecificBooks = database.books.filter(
+    //     (book) => book.category.includes(req.params.category)     // boolean result
+    //     );
+    if(!getSpecificBooks){
         return res.json({
           error: `No book found for the category of ${req.params.category}`,
         });
@@ -86,22 +89,24 @@ Aranda.get("/c/:category",(req,res) => {
  method        GET
 */
 
-Aranda.get("/a/:author",(req,res) =>{
-  const  getAuthor = database.authors.filter(x => x.name === req.params.author);
-  const getAuthorId = getAuthor.map(s => s.id);
-  const m = getAuthorId.toString();
-  const getSpecificBooks = database.books.filter(
-    (book) => 
-      book.authors.includes(parseInt(m))
-    );
-    if(getSpecificBooks.length === 0){
-      return res.json({
-        error: `No book found for the category of ${req.params.author}`,
-      });
-  }  
-   
+ Aranda.get("/a/:author",async(req,res) =>{
+  //  const  getAuthor = database.authors.filter(x => x.name === req.params.author);
+  //  const getAuthorId = getAuthor.map(s => s.id);
+  //  const m = getAuthorId.toString();
+  //  const getSpecificBooks = database.books.filter(
+  //    (book) => 
+  //      book.authors.includes(parseInt(m)) 
+  //    );
+  const getSpecificBooks = await BookModel.findOne({authors: req.params.author});
+     if(!getSpecificBooks){
+       return res.json({
+         error: `No book found for the category of ${req.params.author}`,
+       });
+   }  
    return res.json({ book: getSpecificBooks });
   });
+
+
 
   /*
  route           /author
@@ -111,8 +116,9 @@ Aranda.get("/a/:author",(req,res) =>{
  method        GET
 */
 
-Aranda.get("/author",(req,res) => {
-  return res.json({ authors: database.authors});
+Aranda.get("/author",async(req,res) => {
+  const getAllAuthors = await AuthorModel.find();
+  return res.json({ authors: getAllAuthors});
 });
 
 /*
@@ -123,11 +129,12 @@ Aranda.get("/author",(req,res) => {
  method        GET
 */
 
-Aranda.get("/author/:id",(req,res) => {
-  const getSpecificAuthor = database.authors.filter(
-    (author) => author.id.toString() === req.params.id
-    );
-if(getSpecificAuthor.length === 0){
+Aranda.get("/author/:id",async(req,res) => {
+  const getSpecificAuthor = await AuthorModel.findOne({id: req.params.id});
+  // const getSpecificAuthor = database.authors.filter(
+  //   (author) => author.id.toString() === req.params.id
+  //   );
+if(!getSpecificAuthor){
     return res.json({
       error: `No author found for the id of ${req.params.id}`,
     });
@@ -145,11 +152,12 @@ if(getSpecificAuthor.length === 0){
  parameters    ISBN
  method        GET
 */ 
-Aranda.get("/author/book/:isbn",(req,res) =>{
- const getSpecificAuthors = database.authors.filter((author) =>
- author.books.includes(req.params.isbn)
- );
- if(getSpecificAuthors.length === 0){
+Aranda.get("/author/book/:isbn",async(req,res) =>{
+  const getSpecificAuthors = await AuthorModel.findOne({books: req.params.isbn});
+//  const getSpecificAuthors = database.authors.filter((author) =>
+//  author.books.includes(req.params.isbn)
+//  );
+ if(!getSpecificAuthors){
   return res.json({
     error: `No author found for the book ${req.params.isbn}`,
   });
@@ -166,9 +174,13 @@ return res.json({ authors : getSpecificAuthors });
  method        GET
 */
 
-Aranda.get("/publication",(req,res) => {
-  return res.json({ publications: database.publications});
-});
+Aranda.get("/publication",async(req,res) =>{ try {
+  const getAllPublications = await PublicationModel.find();
+  return res.json({ publications: getAllPublications});
+}
+catch (error) {
+  return res.json({ error: error.message });
+}});
 
 /*
  route           /publication
@@ -178,11 +190,13 @@ Aranda.get("/publication",(req,res) => {
  method        GET
 */
 
-Aranda.get("/publication/:id",(req,res) => {
-  const getSpecificPublications = database.publications.filter(
-    (publication) => publication.id.toString() === req.params.id
-    );
-if(getSpecificPublications.length === 0){
+Aranda.get("/publication/:id",async(req,res) => {
+  const getSpecificPublications = await PublicationModel.findOne({id: req.params.id});
+  // const getSpecificPublications = database.publications.filter(
+  //   (publication) => publication.id.toString() === req.params.id
+  //   );
+// if(getSpecificPublications.length === 0)
+    if(!getSpecificPublications){
     return res.json({
       error: `No publication found for the id of ${req.params.id}`,
     });
@@ -198,11 +212,13 @@ if(getSpecificPublications.length === 0){
  parameters    ISBN
  method        GET
 */ 
-Aranda.get("/publication/is/:isbn",(req,res) =>{
-  const getSpecificPublications = database.publications.filter((publication) =>
-  publication.books.includes(req.params.isbn)
-  );
-  if(getSpecificPublications.length === 0){
+Aranda.get("/publication/is/:isbn",async(req,res) =>{
+  const getSpecificPublications = await PublicationModel.findOne({books: req.params.isbn});
+  // const getSpecificPublications = database.publications.filter((publication) =>
+  // publication.books.includes(req.params.isbn)
+  // );
+  // if(getSpecificPublications.length === 0)
+  if(!getSpecificPublications){
    return res.json({
      error: `No publication found for the book ${req.params.isbn}`,
    });
@@ -218,10 +234,11 @@ Aranda.get("/publication/is/:isbn",(req,res) =>{
  method        POST
 */ 
 
-Aranda.post("/book/new",(req,res) =>{
+Aranda.post("/book/new", async (req,res) =>{
     const { newBook } = req.body;
-    database.books.push(newBook);
-    return res.json({books: database.books,message: "book was added"});
+    const addNewBook = BookModel.create(newBook);
+    //database.books.push(newBook);
+    return res.json({books: addNewBook, message: "book was added"});
   });
 
 /*
@@ -234,8 +251,8 @@ Aranda.post("/book/new",(req,res) =>{
 
 Aranda.post("/author/new/newAuthor",(req,res) =>{
   const { newAuthor } = req.body;
-  database.authors.push(newAuthor);
-  return res.json({authors: database.authors,message: "author was added"});
+  AuthorModel.create(newAuthor);                                      //database.authors.push(newAuthor);
+  return res.json({message: "author was added"});
 });
 
 /*
@@ -248,8 +265,8 @@ Aranda.post("/author/new/newAuthor",(req,res) =>{
 
 Aranda.post("/publication/new/newPub",(req,res) =>{
   const { newPublication } = req.body;
-  database.publications.push(newPublication);
-  return res.json({publications: database.publications,message: "publication was added"});
+  PublicationModel.create(newPublication);                  //database.publications.push(newPublication);
+  return res.json({message: "publication was added"});
 });
 
 /*

@@ -5,7 +5,7 @@ const BookSchema = mongoose.Schema({        //creating a book schema
     title: String,
     authors: [Number],
     language: String,
-    pubDate: Number,
+    pubDate: String,
     numOfPage: Number,
     category: [String],
     publication: Number,

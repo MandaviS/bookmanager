@@ -251,7 +251,8 @@ Aranda.post("/book/new", async (req,res) =>{
 
 Aranda.post("/author/new/newAuthor",(req,res) =>{
   const { newAuthor } = req.body;
-  AuthorModel.create(newAuthor);                                      //database.authors.push(newAuthor);
+  AuthorModel.create(newAuthor);      
+  //database.authors.push(newAuthor);
   return res.json({message: "author was added"});
 });
 
@@ -265,7 +266,8 @@ Aranda.post("/author/new/newAuthor",(req,res) =>{
 
 Aranda.post("/publication/new/newPub",(req,res) =>{
   const { newPublication } = req.body;
-  PublicationModel.create(newPublication);                  //database.publications.push(newPublication);
+  PublicationModel.create(newPublication);        
+  //database.publications.push(newPublication);
   return res.json({message: "publication was added"});
 });
 
@@ -277,14 +279,25 @@ Aranda.post("/publication/new/newPub",(req,res) =>{
  method        PUT
 */ 
 
-Aranda.put("/book/update/:isbn",(req,res) =>{
-  database.books.forEach((book) => {
-    if(book.ISBN == req.params.isbn){
-      book.title = req.body.bookTitle;
-      return;
+Aranda.put("/book/update/:isbn",async(req,res) =>{
+  const updatedBook = await BookModel.findOneAndUpdate(
+    {
+      ISBN: req.params.isbn,
+    },
+    {
+      title: req.body.bookTitle,
+    },
+    {
+      new: true,
     }
-  });
-  return res.json({ books: database.books});
+  );
+  // database.books.forEach((book) => {
+  //   if(book.ISBN == req.params.isbn){
+  //     book.title = req.body.bookTitle;
+  //     return;
+  //   }
+  // });
+  return res.json({ books: updatedBook});
   });
 
   /*

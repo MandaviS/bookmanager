@@ -235,7 +235,7 @@ Aranda.get("/publication/is/:isbn",async(req,res) =>{
 */ 
 
 Aranda.post("/book/new", async (req,res) =>{
-    const { newBook } = req.body;
+    const { newBook } = req.body;                                         //async await not necessary
     const addNewBook = BookModel.create(newBook);
     //database.books.push(newBook);
     return res.json({books: addNewBook, message: "book was added"});
@@ -308,18 +308,46 @@ Aranda.put("/book/update/:isbn",async(req,res) =>{
  method        PUT
 */ 
 
-Aranda.put("/book/author/update/:isbn",(req,res) =>{
-  database.books.forEach((book) => {                   //updating book database
-    if(book.ISBN == req.params.isbn){
-      return book.authors.push(req.body.newAuthor);
-    }
-  });
-  database.authors.forEach((author) => {              //updationg author database
-    if(author.id == req.body.newAuthor){
-      return author.books.push(req.params.isbn);
-    }
-  })
-  return res.json({ books: database.books, authors: database.authors, message: "new author was added"});
+Aranda.put("/book/author/update/:isbn",async(req,res) =>{
+  //book database
+  const updatedBook = await BookModel.findOneAndUpdate(
+    {
+      ISBN: req.params.isbn,
+    },
+    {
+      $push: {
+        authors: req.body.newAuthor,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+  //author database
+  const updatedAuthor = await AuthorModel.findOneAndUpdate(
+    {
+      id: req.body.newAuthor,
+    },
+    {
+      $push: {
+        books: req.params.isbn,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+  // database.books.forEach((book) => {                   //updating book database
+  //   if(book.ISBN == req.params.isbn){
+  //     return book.authors.push(req.body.newAuthor);
+  //   }
+  // });
+  // database.authors.forEach((author) => {              //updationg author database
+  //   if(author.id == req.body.newAuthor){
+  //     return author.books.push(req.params.isbn);
+  //   }
+  // })
+  return res.json({ books: updatedBook, authors: updatedAuthor, message: "new author was added"});
   });
 
 /*
@@ -330,14 +358,25 @@ Aranda.put("/book/author/update/:isbn",(req,res) =>{
  method        PUT
 */ 
 
-Aranda.put("/author/update/:id",(req,res) =>{
-  database.authors.forEach((author) => {
-    if(author.id == req.params.id){
-      author.name = req.body.authorName;
-      return;
+Aranda.put("/author/update/:id",async(req,res) =>{
+  const updatedAuthor = await AuthorModel.findOneAndUpdate(
+    {
+      id: parseInt(req.params.id),
+    },
+    {
+      name: req.body.authorName,
+    },
+    {
+      new: true,
     }
-  });
-  return res.json({ authors: database.authors});
+  );
+  // database.authors.forEach((author) => {
+  //   if(author.id == req.params.id){
+  //     author.name = req.body.authorName;
+  //     return;
+  //   }
+  // });
+  return res.json({ authors: updatedAuthor});
   });  
 
    /*
@@ -348,19 +387,47 @@ Aranda.put("/author/update/:id",(req,res) =>{
  method        PUT
 */ 
 
-Aranda.put("/publication/book/update/:isbn",(req,res) =>{
-  database.publications.forEach((publication) => {                   //updating publication database
-    if(publication.id === req.body.pubID){
-      return publication.books.push(req.params.isbn);
-    }
-  });
-  database.books.forEach((book) => {              //updationg book database
-    if(book.ISBN === req.params.isbn){
-    book.publication = req.body.pubID;
-    return;
-    }
-  })
-  return res.json({ publications: database.publications, books: database.books, message: "successfully updated publication"});
+Aranda.put("/publication/book/update/:isbn",async(req,res) =>{
+  //publication database
+  const updatedPublication = await PublicationModel.findOneAndUpdate(
+    {
+      id: req.body.pubID,
+    },
+    {
+      $push: {
+        books: req.params.isbn,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+  //book database
+  const updatedBook = await BookModel.findOneAndUpdate(
+    {
+      ISBN: req.params.isbn,
+    },
+    {
+      $set: {
+     publication: req.body.pubID,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+  // database.publications.forEach((publication) => {                   //updating publication database
+  //   if(publication.id === req.body.pubID){
+  //     return publication.books.push(req.params.isbn);
+  //   }
+  // });
+  // database.books.forEach((book) => {              //updationg book database
+  //   if(book.ISBN === req.params.isbn){
+  //   book.publication = req.body.pubID;
+  //   return;
+  //   }
+  // });
+  return res.json({ publication: updatedPublication, books: updatedBook, message: "successfully updated publication"});
   });
   
   /*
@@ -371,13 +438,18 @@ Aranda.put("/publication/book/update/:isbn",(req,res) =>{
  method        DELETE
 */ 
 
-Aranda.delete("/book/delete/:isbn",(req,res) =>{
-const updatedBookDatabase = database.books.filter((book) =>
-book.ISBN !== req.params.isbn
-);
+Aranda.delete("/book/delete/:isbn",async(req,res) =>{
+  const updatedBookDatabase = await BookModel.findOneAndDelete(
+    {
+      ISBN: req.params.isbn,
+    },
+  );
+// const updatedBookDatabase = database.books.filter((book) =>
+// book.ISBN !== req.params.isbn
+// );
 
-database.books= updatedBookDatabase;
-return res.json({books: database.books });    //coz we're changing const to let in database as we're
+// database.books= updatedBookDatabase;
+return res.json({books: updatedBookDatabase });    //coz we're changing const to let in database as we're
   });                                         //replacing whole database with a new database
 
  /*
@@ -388,26 +460,54 @@ return res.json({books: database.books });    //coz we're changing const to let 
  method        DELETE
 */ 
 
-Aranda.delete("/book/author/delete/:isbn/:authorID",(req,res) =>{
-  database.books.forEach((book)=>{
-   if(book.ISBN === req.params.isbn){
-     const newAuthorList = book.authors.filter(
-       (author)=> author !== parseInt(req.params.authorID)
-     );
-     book.authors = newAuthorList;
-     return;
-   }
-  });
-  database.authors.forEach((author)=>{
-    if(author.id === parseInt(req.params.authorID)){
-      const newBooksList = author.books.filter(
-        (book)=> book !== req.params.isbn
-      );
-      author.books = newBooksList;
-      return;
-    }
-   });
-  return res.json({books: database.books, authors: database.authors,message:"author was deleted" });    
+Aranda.delete("/book/author/delete/:isbn/:authorID",async(req,res) =>{
+   //book database
+   const updatedBook = await BookModel.findOneAndUpdate(
+     {
+       ISBN: req.params.isbn,
+     },
+     {
+       $pull: {
+        authors: parseInt(req.params.authorID),
+       },
+     },
+     {
+       new: true,
+     }
+   );
+  //author database
+  const updatedAuthor = await AuthorModel.findOneAndUpdate(
+    {
+      id: parseInt(req.params.authorID),
+    },
+    {
+      $pull:{
+      books: req.params.isbn,
+      },
+    },
+    {
+      new:true,
+    },
+  ); 
+  // database.books.forEach((book)=>{
+  //  if(book.ISBN === req.params.isbn){
+  //    const newAuthorList = book.authors.filter(
+  //      (author)=> author !== parseInt(req.params.authorID)
+  //    );
+  //    book.authors = newAuthorList;
+  //    return;
+  //  }
+  // });
+  // database.authors.forEach((author)=>{
+  //   if(author.id === parseInt(req.params.authorID)){
+  //     const newBooksList = author.books.filter(
+  //       (book)=> book !== req.params.isbn
+  //     );
+  //     author.books = newBooksList;
+  //     return;
+  //   }
+  //  });
+  return res.json({books: updatedBook, authors: updatedAuthor,message:"author was deleted" });    
     });                    
   
    /*
@@ -418,12 +518,17 @@ Aranda.delete("/book/author/delete/:isbn/:authorID",(req,res) =>{
  method        DELETE
 */ 
 
-Aranda.delete("/author/delete/:id",(req,res) =>{
-  const updatedAuthorDatabase = database.authors.filter((author) =>
-  author.id !== parseInt(req.params.id)
+Aranda.delete("/author/delete/:id",async(req,res) =>{
+  const updatedAuthorDatabase = await AuthorModel.findOneAndDelete(
+    {
+      id: parseInt(req.params.id),
+    },
   );
-  database.authors= updatedAuthorDatabase;
-  return res.json({authors: database.authors });    
+  // const updatedAuthorDatabase = database.authors.filter((author) =>
+  // author.id !== parseInt(req.params.id)
+  // );
+  // database.authors= updatedAuthorDatabase;
+  return res.json({authors: updatedAuthorDatabase });    
     });             
 
  /*
@@ -434,24 +539,53 @@ Aranda.delete("/author/delete/:id",(req,res) =>{
  method        DELETE
 */ 
 
-Aranda.delete("/publication/book/delete/:isbn/:pubID",(req,res) =>{
-  database.publications.forEach((publication)=>{
-    if(publication.id === parseInt(req.params.pubID)){    //updating publication database
-      const newBooksList = publication.books.filter(
-        (book)=> book !== req.params.isbn
-      );
-      publication.books = newBooksList;
-      return;
+Aranda.delete("/publication/book/delete/:isbn/:pubID",async(req,res) =>{
+  //publication database
+  const updatedPublication = await PublicationModel.findOneAndUpdate(
+    {
+      id: parseInt(req.params.pubID),
+    },
+    {
+      $pull:
+      {
+        books: req.params.isbn,
+      },
+    },
+    {
+      new: true,
     }
-   });
-  database.books.forEach((book)=>{
-   if(book.ISBN === req.params.isbn){                    //updating book database
-     book.publication = 0; //No publication available
-     return;
-   }
-  });
+  );
+  //book database
+  const updatedBook = await BookModel.findOneAndUpdate(
+    {
+      ISBN: req.params.isbn,
+    },
+    {
+      $unset: {
+        publication: parseInt(req.params.pubID),
+      },
+    },
+    {
+      new: true,
+    }
+  );
+  // database.publications.forEach((publication)=>{
+  //   if(publication.id === parseInt(req.params.pubID)){    //updating publication database
+  //     const newBooksList = publication.books.filter(
+  //       (book)=> book !== req.params.isbn
+  //     );
+  //     publication.books = newBooksList;
+  //     return;
+  //   }
+  //  });
+  // database.books.forEach((book)=>{
+  //  if(book.ISBN === req.params.isbn){                    //updating book database
+  //    book.publication = 0; //No publication available
+  //    return;
+  //  }
+  // });
 
-  return res.json({books: database.books, publications: database.publications});    
+  return res.json({books: updatedBook, publications: updatedPublication});    
     });                    
       
     /*
@@ -462,12 +596,17 @@ Aranda.delete("/publication/book/delete/:isbn/:pubID",(req,res) =>{
  method        DELETE
 */ 
 
-Aranda.delete("/publication/delete/:id",(req,res) =>{
-  const updatedPublicationDatabase = database.publications.filter((publication) =>
-  publication.id !== parseInt(req.params.id)
+Aranda.delete("/publication/delete/:id",async(req,res) =>{
+  const updatedPublication = await PublicationModel.findOneAndDelete(
+    {
+      id: parseInt(req.params.id),
+    }
   );
-  database.publications= updatedPublicationDatabase;
-  return res.json({publications: database.publications });    
+  // const updatedPublicationDatabase = database.publications.filter((publication) =>
+  // publication.id !== parseInt(req.params.id)
+  // );
+  // database.publications= updatedPublicationDatabase;
+  return res.json({publications: updatedPublication });    
     });    
 
 Aranda.listen(3000, () => console.log("Server Running!!"));

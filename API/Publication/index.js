@@ -11,7 +11,7 @@ const PublicationModel = require("../../database/publication");
  method        GET
 */
 
-Router.get("/publication",async(req,res) =>{ try {
+Router.get("/",async(req,res) =>{ try {
     const getAllPublications = await PublicationModel.find();
     return res.json({ publications: getAllPublications});
   }

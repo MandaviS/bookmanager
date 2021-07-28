@@ -1,5 +1,5 @@
 // prefix: /publication
-const Router = reuire("express").Router();
+const Router = require("express").Router();
 
 const PublicationModel = require("../../database/publication");
  

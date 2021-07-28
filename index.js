@@ -13,7 +13,7 @@ const mongoose = require("mongoose");
 //initialising micro services routes
 const Books = require("./API/Book");
 const Authors = require("./API/Author");
-const Publications = require("./API/Author");
+const Publications = require("./API/Publication");
 
 const Aranda = express();
 

@@ -97,10 +97,14 @@ Router.get("/a/:author",async(req,res) =>{
 */ 
 
 Router.post("/new", async (req,res) =>{
-    const { newBook } = req.body;                                         //async await not necessary
-    const addNewBook = BookModel.create(newBook);
+  try{
+    const { newBook } = req.body;                 //async await not necessary as such but necessary in error handling
+    const addNewBook = await BookModel.create(newBook);
     //database.books.push(newBook);
     return res.json({books: addNewBook, message: "book was added"});
+  } catch(error){
+    return res.json({error: error.message});
+  }  
   });
   
 /*
@@ -112,6 +116,7 @@ Router.post("/new", async (req,res) =>{
 */ 
 
 Router.put("/update/:isbn",async(req,res) =>{
+   try{
     const updatedBook = await BookModel.findOneAndUpdate(
       {
         ISBN: req.params.isbn,
@@ -130,6 +135,9 @@ Router.put("/update/:isbn",async(req,res) =>{
     //   }
     // });
     return res.json({ books: updatedBook});
+   } catch(error){
+     return res.json({error: error.message});
+   } 
     });
     
  /*
@@ -141,6 +149,7 @@ Router.put("/update/:isbn",async(req,res) =>{
 */ 
 
 Router.put("/author/update/:isbn",async(req,res) =>{
+  try{
     //book database
     const updatedBook = await BookModel.findOneAndUpdate(
       {
@@ -180,6 +189,9 @@ Router.put("/author/update/:isbn",async(req,res) =>{
     //   }
     // })
     return res.json({ books: updatedBook, authors: updatedAuthor, message: "new author was added"});
+  } catch(error){
+    return res.json({error: error.message});
+  }  
     });    
 
   /*

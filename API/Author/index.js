@@ -67,11 +67,15 @@ Router.get("/book/:isbn",async(req,res) =>{
  method        POST
 */ 
 
-Router.post("/new/newAuthor",(req,res) =>{
+Router.post("/new/newAuthor",async(req,res) =>{
+  try{
     const { newAuthor } = req.body;
-    AuthorModel.create(newAuthor);      
+    await AuthorModel.create(newAuthor);      
     //database.authors.push(newAuthor);
     return res.json({message: "author was added"});
+  } catch(error){
+    return res.json({error: error.message});
+  }  
   });
   
 /*
@@ -83,24 +87,28 @@ Router.post("/new/newAuthor",(req,res) =>{
 */ 
 
 Router.put("/update/:id",async(req,res) =>{
-    const updatedAuthor = await AuthorModel.findOneAndUpdate(
-      {
-        id: parseInt(req.params.id),
-      },
-      {
-        name: req.body.authorName,
-      },
-      {
-        new: true,
-      }
-    );
-    // database.authors.forEach((author) => {
-    //   if(author.id == req.params.id){
-    //     author.name = req.body.authorName;
-    //     return;
-    //   }
-    // });
-    return res.json({ authors: updatedAuthor});
+try{
+  const updatedAuthor = await AuthorModel.findOneAndUpdate(
+    {
+      id: parseInt(req.params.id),
+    },
+    {
+      name: req.body.authorName,
+    },
+    {
+      new: true,
+    }
+  );
+  // database.authors.forEach((author) => {
+  //   if(author.id == req.params.id){
+  //     author.name = req.body.authorName;
+  //     return;
+  //   }
+  // });
+  return res.json({ authors: updatedAuthor});
+} catch(error){
+  return res.json({error: error.message});
+}    
     }); 
     
  /*

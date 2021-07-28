@@ -75,11 +75,15 @@ Router.get("/",async(req,res) =>{ try {
    method        POST
   */ 
   
-  Router.post("/new/newPub",(req,res) =>{
+  Router.post("/new/newPub",async(req,res) =>{
+  try{
     const { newPublication } = req.body;
-    PublicationModel.create(newPublication);        
+   await PublicationModel.create(newPublication);        
     //database.publications.push(newPublication);
     return res.json({message: "publication was added"});
+  } catch(error){
+    return res.json({error: error.message});
+  }  
   });
   
     /*
@@ -91,6 +95,7 @@ Router.get("/",async(req,res) =>{ try {
   */ 
   
   Router.put("/book/update/:isbn",async(req,res) =>{
+  try{
     //publication database
     const updatedPublication = await PublicationModel.findOneAndUpdate(
       {
@@ -131,13 +136,11 @@ Router.get("/",async(req,res) =>{ try {
     //   }
     // });
     return res.json({ publication: updatedPublication, books: updatedBook, message: "successfully updated publication"});
+  } catch(error){
+    return res.json({error: error.message});
+  }  
     });
     
-  
-                      
-    
-      
-  
    /*
    route           /publication/book/delete
    description    delete a book from publication
